@@ -1,17 +1,34 @@
-variable "aws_region" {
-  description = "AWS region to deploy resources into"
+variable "bucket_name" {
+  description = "The name of the S3 bucket. Must be globally unique."
   type        = string
-  default     = "us-east-1"
 }
 
-variable "bucket_name" {
-  description = "Name of the S3 bucket"
+variable "bucket_acl" {
+  description = "The canned ACL to apply to the bucket"
   type        = string
-  default     = "my-terraform-s3-bucket-2025"
+  default     = "private"
 }
 
 variable "environment" {
-  description = "Environment tag value"
+  description = "Environment tag for the bucket"
   type        = string
   default     = "dev"
+}
+
+variable "force_destroy" {
+  description = "Allow the bucket to be destroyed even if it contains objects"
+  type        = bool
+  default     = false
+}
+
+variable "versioning_enabled" {
+  description = "Enable versioning on the bucket"
+  type        = bool
+  default     = true
+}
+
+variable "tags" {
+  description = "Additional tags to attach to the bucket"
+  type        = map(string)
+  default     = {}
 }
