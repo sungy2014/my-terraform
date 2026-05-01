@@ -5,13 +5,13 @@ variable "aws_region" {
 }
 
 variable "bucket_name" {
-  description = "Name of the S3 bucket (must be globally unique)"
+  description = "Name of the S3 bucket"
   type        = string
-  default     = "my-test-bucket-12345"
+  default     = "my-uptest"
 }
 
 variable "environment" {
-  description = "Environment tag for the bucket"
+  description = "Environment tag"
   type        = string
-  default     = "dev"
+  default     = "production"
 }
