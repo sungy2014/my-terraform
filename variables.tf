@@ -1,34 +1,17 @@
-variable "bucket_name" {
-  description = "The name of the S3 bucket. Must be globally unique."
+variable "aws_region" {
+  description = "AWS region to deploy resources"
   type        = string
+  default     = "us-east-1"
 }
 
-variable "bucket_acl" {
-  description = "The canned ACL to apply to the bucket"
+variable "bucket_name" {
+  description = "Name of the S3 bucket (must be globally unique)"
   type        = string
-  default     = "private"
+  default     = "my-test-bucket-12345"
 }
 
 variable "environment" {
   description = "Environment tag for the bucket"
   type        = string
   default     = "dev"
-}
-
-variable "force_destroy" {
-  description = "Allow the bucket to be destroyed even if it contains objects"
-  type        = bool
-  default     = false
-}
-
-variable "versioning_enabled" {
-  description = "Enable versioning on the bucket"
-  type        = bool
-  default     = true
-}
-
-variable "tags" {
-  description = "Additional tags to attach to the bucket"
-  type        = map(string)
-  default     = {}
 }
