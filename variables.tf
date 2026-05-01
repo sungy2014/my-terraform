@@ -1,5 +1,5 @@
 variable "aws_region" {
-  description = "AWS region to deploy resources"
+  description = "AWS region to deploy resources into"
   type        = string
   default     = "us-east-1"
 }
@@ -13,5 +13,5 @@ variable "bucket_name" {
 variable "environment" {
   description = "Environment tag value"
   type        = string
-  default     = "production"
+  default     = "dev"
 }

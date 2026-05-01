@@ -1,24 +1,19 @@
-output "bucket_id" {
-  description = "The ID (name) of the S3 bucket"
+output "s3_bucket_id" {
+  description = "The ID of the S3 bucket"
   value       = aws_s3_bucket.this.id
 }
 
-output "bucket_arn" {
+output "s3_bucket_arn" {
   description = "The ARN of the S3 bucket"
   value       = aws_s3_bucket.this.arn
 }
 
-output "bucket_domain_name" {
+output "s3_bucket_domain_name" {
   description = "The domain name of the S3 bucket"
   value       = aws_s3_bucket.this.bucket_domain_name
 }
 
-output "bucket_regional_domain_name" {
-  description = "The regional domain name of the S3 bucket"
-  value       = aws_s3_bucket.this.bucket_regional_domain_name
-}
-
-output "versioning_enabled" {
-  description = "Whether versioning is enabled on the bucket"
+output "versioning_status" {
+  description = "The versioning status of the S3 bucket"
   value       = aws_s3_bucket_versioning.this.versioning_configuration[0].status
 }
