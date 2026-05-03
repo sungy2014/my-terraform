@@ -1,29 +1,11 @@
-locals {
-  common_tags = {
-    Name        = var.bucket_name
-    Environment = var.environment
-    ManagedBy   = "Terraform"
-  }
-  merged_tags = merge(local.common_tags, var.tags)
-}
-
-# S3 Bucket
+# S3 bucket
 resource "aws_s3_bucket" "this" {
   bucket = var.bucket_name
 
-  tags = local.merged_tags
+  tags = var.tags
 }
 
-# S3 Bucket Versioning
-resource "aws_s3_bucket_versioning" "this" {
-  bucket = aws_s3_bucket.this.id
-
-  versioning_configuration {
-    status = var.enable_versioning ? "Enabled" : "Suspended"
-  }
-}
-
-# S3 Bucket Public Access Block - Security best practice
+# Block all public access
 resource "aws_s3_bucket_public_access_block" "this" {
   bucket = aws_s3_bucket.this.id
 
@@ -33,10 +15,17 @@ resource "aws_s3_bucket_public_access_block" "this" {
   restrict_public_buckets = true
 }
 
-# S3 Bucket Server-Side Encryption
-resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
-  count = var.enable_encryption ? 1 : 0
+# Enable versioning
+resource "aws_s3_bucket_versioning" "this" {
+  bucket = aws_s3_bucket.this.id
 
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# Enable server-side encryption (AES256)
+resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
   bucket = aws_s3_bucket.this.id
 
   rule {
@@ -46,11 +35,34 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
   }
 }
 
-# S3 Bucket Ownership Controls - recommended for ACL-free setup
-resource "aws_s3_bucket_ownership_controls" "this" {
+# Deny non-HTTPS requests via bucket policy
+resource "aws_s3_bucket_policy" "this" {
   bucket = aws_s3_bucket.this.id
+  policy = data.aws_iam_policy_document.deny_insecure_transport.json
+}
 
-  rule {
-    object_ownership = "BucketOwnerEnforced"
+data "aws_iam_policy_document" "deny_insecure_transport" {
+  statement {
+    effect = "Deny"
+
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+    actions = [
+      "s3:*",
+    ]
+
+    resources = [
+      aws_s3_bucket.this.arn,
+      "${aws_s3_bucket.this.arn}/*",
+    ]
+
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
   }
 }
