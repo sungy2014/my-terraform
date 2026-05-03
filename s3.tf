@@ -1,31 +1,21 @@
-# -----------------------------------------------------------------------
-# S3 Bucket
-# -----------------------------------------------------------------------
+# S3 bucket
 resource "aws_s3_bucket" "this" {
-  bucket        = var.bucket_name
-  force_destroy = var.force_destroy
+  bucket = var.bucket_name
 
-  tags = {
-    Name        = var.bucket_name
-    Environment = var.environment
-    ManagedBy   = "terraform"
-  }
+  tags = var.tags
 }
 
-# -----------------------------------------------------------------------
-# S3 Bucket Versioning
-# -----------------------------------------------------------------------
-resource "aws_s3_bucket_versioning" "this" {
+# Block all public access to the bucket
+resource "aws_s3_bucket_public_access_block" "this" {
   bucket = aws_s3_bucket.this.id
 
-  versioning_configuration {
-    status = var.versioning_enabled ? "Enabled" : "Suspended"
-  }
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
-# -----------------------------------------------------------------------
-# S3 Bucket Server-Side Encryption (AES-256)
-# -----------------------------------------------------------------------
+# Enable server-side encryption (AES256)
 resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
   bucket = aws_s3_bucket.this.id
 
@@ -36,34 +26,35 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
   }
 }
 
-# -----------------------------------------------------------------------
-# Block Public Access
-# -----------------------------------------------------------------------
-resource "aws_s3_bucket_public_access_block" "this" {
+# Enable bucket versioning
+resource "aws_s3_bucket_versioning" "this" {
   bucket = aws_s3_bucket.this.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+  versioning_configuration {
+    status = var.enable_versioning ? "Enabled" : "Suspended"
+  }
 }
 
-# -----------------------------------------------------------------------
-# S3 Bucket Lifecycle Configuration (optional - for cost optimization)
-# -----------------------------------------------------------------------
-resource "aws_s3_bucket_lifecycle_configuration" "this" {
+# Deny non-HTTPS requests (security best practice)
+resource "aws_s3_bucket_policy" "deny_insecure_transport" {
   bucket = aws_s3_bucket.this.id
-
-  rule {
-    id     = "expire-noncurrent-versions"
-    status = var.versioning_enabled ? "Enabled" : "Disabled"
-
-    noncurrent_version_expiration {
-      noncurrent_days = 30
-    }
-
-    abort_incomplete_multipart_upload {
-      days_after_initiation = 7
-    }
-  }
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "DenyInsecureTransport"
+        Effect    = "Deny"
+        Principal = "*"
+        Action    = "s3:*"
+        Resource = [
+          aws_s3_bucket.this.arn,
+          "${aws_s3_bucket.this.arn}/*"
+        ]
+        Condition = {
+          Bool = {
+            "aws:SecureTransport" = "false"
+          }
+        }
+      }
+    ]
+  })
 }
