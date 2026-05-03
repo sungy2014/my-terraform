@@ -1,28 +1,28 @@
-# -----------------------------------------------------------
+# ---------------------------------------------------------------------------
 # S3 Bucket
-# -----------------------------------------------------------
+# ---------------------------------------------------------------------------
 resource "aws_s3_bucket" "this" {
   bucket = var.bucket_name
 
-  tags = {
+  tags = merge(var.tags, {
     Name = var.bucket_name
-  }
+  })
 }
 
-# -----------------------------------------------------------
-# S3 Bucket Versioning
-# -----------------------------------------------------------
-resource "aws_s3_bucket_versioning" "this" {
+# ---------------------------------------------------------------------------
+# S3 Bucket Ownership Controls
+# ---------------------------------------------------------------------------
+resource "aws_s3_bucket_ownership_controls" "this" {
   bucket = aws_s3_bucket.this.id
 
-  versioning_configuration {
-    status = "Enabled"
+  rule {
+    object_ownership = "BucketOwnerEnforced"
   }
 }
 
-# -----------------------------------------------------------
-# S3 Bucket Public Access Block (Security Best Practice)
-# -----------------------------------------------------------
+# ---------------------------------------------------------------------------
+# S3 Bucket Public Access Block
+# ---------------------------------------------------------------------------
 resource "aws_s3_bucket_public_access_block" "this" {
   bucket = aws_s3_bucket.this.id
 
@@ -32,10 +32,23 @@ resource "aws_s3_bucket_public_access_block" "this" {
   restrict_public_buckets = true
 }
 
-# -----------------------------------------------------------
-# S3 Bucket Server-Side Encryption (Security Best Practice)
-# -----------------------------------------------------------
+# ---------------------------------------------------------------------------
+# S3 Bucket Versioning
+# ---------------------------------------------------------------------------
+resource "aws_s3_bucket_versioning" "this" {
+  count  = var.enable_versioning ? 1 : 0
+  bucket = aws_s3_bucket.this.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# ---------------------------------------------------------------------------
+# S3 Bucket Server-Side Encryption
+# ---------------------------------------------------------------------------
 resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
+  count  = var.enable_encryption ? 1 : 0
   bucket = aws_s3_bucket.this.id
 
   rule {
