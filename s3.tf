@@ -1,13 +1,28 @@
-# S3 bucket
+# -----------------------------------------------------------
+# S3 Bucket
+# -----------------------------------------------------------
 resource "aws_s3_bucket" "this" {
   bucket = var.bucket_name
 
-  tags = merge(var.tags, {
+  tags = {
     Name = var.bucket_name
-  })
+  }
 }
 
-# Block public access
+# -----------------------------------------------------------
+# S3 Bucket Versioning
+# -----------------------------------------------------------
+resource "aws_s3_bucket_versioning" "this" {
+  bucket = aws_s3_bucket.this.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# -----------------------------------------------------------
+# S3 Bucket Public Access Block (Security Best Practice)
+# -----------------------------------------------------------
 resource "aws_s3_bucket_public_access_block" "this" {
   bucket = aws_s3_bucket.this.id
 
@@ -17,7 +32,9 @@ resource "aws_s3_bucket_public_access_block" "this" {
   restrict_public_buckets = true
 }
 
-# Enable server-side encryption by default
+# -----------------------------------------------------------
+# S3 Bucket Server-Side Encryption (Security Best Practice)
+# -----------------------------------------------------------
 resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
   bucket = aws_s3_bucket.this.id
 
@@ -25,14 +42,5 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"
     }
-  }
-}
-
-# Enable versioning
-resource "aws_s3_bucket_versioning" "this" {
-  bucket = aws_s3_bucket.this.id
-
-  versioning_configuration {
-    status = "Enabled"
   }
 }
