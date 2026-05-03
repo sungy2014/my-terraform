@@ -1,29 +1,26 @@
 variable "aws_region" {
-  description = "AWS region to deploy resources"
+  description = "AWS region to deploy resources into"
   type        = string
   default     = "us-east-1"
 }
 
+variable "bucket_name" {
+  description = "Globally unique name for the S3 bucket"
+  type        = string
+}
+
 variable "environment" {
-  description = "Environment name for tagging"
+  description = "Environment label for tagging"
   type        = string
   default     = "production"
 }
 
-variable "bucket_name" {
-  description = "Name of the S3 bucket (must be globally unique)"
-  type        = string
-  default     = "my-s3-bucket-5"
-}
-
-variable "versioning_enabled" {
-  description = "Enable S3 bucket versioning"
-  type        = bool
-  default     = true
-}
-
 variable "tags" {
-  description = "Additional tags to apply to resources"
+  description = "Common tags applied to all resources"
   type        = map(string)
-  default     = {}
+  default = {
+    Name        = "my-s3-bucket-5"
+    Environment = "production"
+    ManagedBy   = "terraform"
+  }
 }
