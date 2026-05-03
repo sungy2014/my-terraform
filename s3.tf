@@ -1,14 +1,24 @@
-# ---------------------------------------------------------------------------
 # S3 Bucket
-# ---------------------------------------------------------------------------
 resource "aws_s3_bucket" "this" {
   bucket = var.bucket_name
-  tags   = var.tags
+
+  tags = merge({
+    Name        = var.bucket_name
+    Environment = var.environment
+    ManagedBy   = "terraform"
+  }, var.tags)
 }
 
-# ---------------------------------------------------------------------------
-# S3 Bucket Public Access Block (security best practice)
-# ---------------------------------------------------------------------------
+# S3 Bucket Versioning
+resource "aws_s3_bucket_versioning" "this" {
+  bucket = aws_s3_bucket.this.id
+
+  versioning_configuration {
+    status = var.versioning_enabled ? "Enabled" : "Suspended"
+  }
+}
+
+# Block all public access
 resource "aws_s3_bucket_public_access_block" "this" {
   bucket = aws_s3_bucket.this.id
 
@@ -18,23 +28,8 @@ resource "aws_s3_bucket_public_access_block" "this" {
   restrict_public_buckets = true
 }
 
-# ---------------------------------------------------------------------------
-# S3 Bucket Versioning
-# ---------------------------------------------------------------------------
-resource "aws_s3_bucket_versioning" "this" {
-  bucket = aws_s3_bucket.this.id
-
-  versioning_configuration {
-    status = var.enable_versioning ? "Enabled" : "Suspended"
-  }
-}
-
-# ---------------------------------------------------------------------------
-# S3 Bucket Server-Side Encryption (security best practice)
-# ---------------------------------------------------------------------------
+# Default encryption (SSE-S3)
 resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
-  count = var.enable_encryption ? 1 : 0
-
   bucket = aws_s3_bucket.this.id
 
   rule {
@@ -44,13 +39,16 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
   }
 }
 
-# ---------------------------------------------------------------------------
-# S3 Bucket Ownership Controls (recommended for modern ACL management)
-# ---------------------------------------------------------------------------
-resource "aws_s3_bucket_ownership_controls" "this" {
+# Lifecycle rule to expire noncurrent versions after 30 days
+resource "aws_s3_bucket_lifecycle_configuration" "this" {
   bucket = aws_s3_bucket.this.id
 
   rule {
-    object_ownership = "BucketOwnerEnforced"
+    id     = "expire-noncurrent-versions"
+    status = var.versioning_enabled ? "Enabled" : "Disabled"
+
+    noncurrent_version_expiration {
+      noncurrent_days = 30
+    }
   }
 }
