@@ -3,25 +3,11 @@
 # ---------------------------------------------------------------------------
 resource "aws_s3_bucket" "this" {
   bucket = var.bucket_name
-
-  tags = merge(var.tags, {
-    Name = var.bucket_name
-  })
+  tags   = var.tags
 }
 
 # ---------------------------------------------------------------------------
-# S3 Bucket Ownership Controls
-# ---------------------------------------------------------------------------
-resource "aws_s3_bucket_ownership_controls" "this" {
-  bucket = aws_s3_bucket.this.id
-
-  rule {
-    object_ownership = "BucketOwnerEnforced"
-  }
-}
-
-# ---------------------------------------------------------------------------
-# S3 Bucket Public Access Block
+# S3 Bucket Public Access Block (security best practice)
 # ---------------------------------------------------------------------------
 resource "aws_s3_bucket_public_access_block" "this" {
   bucket = aws_s3_bucket.this.id
@@ -36,24 +22,35 @@ resource "aws_s3_bucket_public_access_block" "this" {
 # S3 Bucket Versioning
 # ---------------------------------------------------------------------------
 resource "aws_s3_bucket_versioning" "this" {
-  count  = var.enable_versioning ? 1 : 0
   bucket = aws_s3_bucket.this.id
 
   versioning_configuration {
-    status = "Enabled"
+    status = var.enable_versioning ? "Enabled" : "Suspended"
   }
 }
 
 # ---------------------------------------------------------------------------
-# S3 Bucket Server-Side Encryption
+# S3 Bucket Server-Side Encryption (security best practice)
 # ---------------------------------------------------------------------------
 resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
-  count  = var.enable_encryption ? 1 : 0
+  count = var.enable_encryption ? 1 : 0
+
   bucket = aws_s3_bucket.this.id
 
   rule {
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"
     }
+  }
+}
+
+# ---------------------------------------------------------------------------
+# S3 Bucket Ownership Controls (recommended for modern ACL management)
+# ---------------------------------------------------------------------------
+resource "aws_s3_bucket_ownership_controls" "this" {
+  bucket = aws_s3_bucket.this.id
+
+  rule {
+    object_ownership = "BucketOwnerEnforced"
   }
 }
