@@ -1,30 +1,31 @@
-# S3 bucket
+# -----------------------------------------------------------------------
+# S3 Bucket
+# -----------------------------------------------------------------------
 resource "aws_s3_bucket" "this" {
-  bucket = var.bucket_name
+  bucket        = var.bucket_name
+  force_destroy = var.force_destroy
 
-  tags = var.tags
+  tags = {
+    Name        = var.bucket_name
+    Environment = var.environment
+    ManagedBy   = "terraform"
+  }
 }
 
-# Block all public access
-resource "aws_s3_bucket_public_access_block" "this" {
-  bucket = aws_s3_bucket.this.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
-# Enable versioning
+# -----------------------------------------------------------------------
+# S3 Bucket Versioning
+# -----------------------------------------------------------------------
 resource "aws_s3_bucket_versioning" "this" {
   bucket = aws_s3_bucket.this.id
 
   versioning_configuration {
-    status = "Enabled"
+    status = var.versioning_enabled ? "Enabled" : "Suspended"
   }
 }
 
-# Enable server-side encryption with AES256
+# -----------------------------------------------------------------------
+# S3 Bucket Server-Side Encryption (AES-256)
+# -----------------------------------------------------------------------
 resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
   bucket = aws_s3_bucket.this.id
 
@@ -35,28 +36,34 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
   }
 }
 
-# Deny unencrypted traffic
-resource "aws_s3_bucket_policy" "deny_insecure_transport" {
+# -----------------------------------------------------------------------
+# Block Public Access
+# -----------------------------------------------------------------------
+resource "aws_s3_bucket_public_access_block" "this" {
   bucket = aws_s3_bucket.this.id
 
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid       = "DenyInsecureTransport"
-        Effect    = "Deny"
-        Principal = "*"
-        Action    = "s3:*"
-        Resource = [
-          aws_s3_bucket.this.arn,
-          "${aws_s3_bucket.this.arn}/*",
-        ]
-        Condition = {
-          Bool = {
-            "aws:SecureTransport" = "false"
-          }
-        }
-      },
-    ]
-  })
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+# -----------------------------------------------------------------------
+# S3 Bucket Lifecycle Configuration (optional - for cost optimization)
+# -----------------------------------------------------------------------
+resource "aws_s3_bucket_lifecycle_configuration" "this" {
+  bucket = aws_s3_bucket.this.id
+
+  rule {
+    id     = "expire-noncurrent-versions"
+    status = var.versioning_enabled ? "Enabled" : "Disabled"
+
+    noncurrent_version_expiration {
+      noncurrent_days = 30
+    }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
 }
