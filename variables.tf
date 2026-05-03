@@ -1,5 +1,5 @@
 variable "aws_region" {
-  description = "AWS region where resources will be created"
+  description = "AWS region to deploy resources into"
   type        = string
   default     = "us-east-1"
 }
@@ -10,13 +10,13 @@ variable "bucket_name" {
 }
 
 variable "environment" {
-  description = "Environment name (e.g. dev, staging, production)"
+  description = "Environment name (e.g. production, staging, development)"
   type        = string
   default     = "production"
 }
 
 variable "enable_versioning" {
-  description = "Enable S3 bucket versioning"
+  description = "Enable or disable S3 bucket versioning"
   type        = bool
   default     = true
 }
@@ -25,7 +25,7 @@ variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)
   default = {
-    Name        = "my-s3-bucket-1"
+    Name        = ""
     Environment = "production"
     ManagedBy   = "terraform"
   }
