@@ -1,20 +1,30 @@
-# S3 bucket resource
+# ---------------------------------------------------------------------------
+# S3 Bucket
+# ---------------------------------------------------------------------------
 resource "aws_s3_bucket" "this" {
   bucket = var.bucket_name
 
-  tags = var.tags
+  tags = merge({
+    Name        = var.bucket_name
+    Environment = var.environment
+    ManagedBy   = "Terraform"
+  }, var.tags)
 }
 
-# Enable versioning for data protection and rollback
-resource "aws_s3_bucket_versioning" "this" {
+# ---------------------------------------------------------------------------
+# Ownership controls (recommended for ACL-less buckets)
+# ---------------------------------------------------------------------------
+resource "aws_s3_bucket_ownership_controls" "this" {
   bucket = aws_s3_bucket.this.id
 
-  versioning_configuration {
-    status = "Enabled"
+  rule {
+    object_ownership = "BucketOwnerEnforced"
   }
 }
 
-# Block all public access for security (default secure)
+# ---------------------------------------------------------------------------
+# Public Access Block – deny all public access
+# ---------------------------------------------------------------------------
 resource "aws_s3_bucket_public_access_block" "this" {
   bucket = aws_s3_bucket.this.id
 
@@ -24,8 +34,23 @@ resource "aws_s3_bucket_public_access_block" "this" {
   restrict_public_buckets = true
 }
 
-# Enable server-side encryption using AES256
+# ---------------------------------------------------------------------------
+# Versioning
+# ---------------------------------------------------------------------------
+resource "aws_s3_bucket_versioning" "this" {
+  count  = var.enable_versioning ? 1 : 0
+  bucket = aws_s3_bucket.this.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# ---------------------------------------------------------------------------
+# Default encryption (SSE-S3)
+# ---------------------------------------------------------------------------
 resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
+  count  = var.enable_encryption ? 1 : 0
   bucket = aws_s3_bucket.this.id
 
   rule {
