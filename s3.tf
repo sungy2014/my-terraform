@@ -1,24 +1,23 @@
 resource "aws_s3_bucket" "this" {
-  bucket = var.bucket_name
+  bucket        = var.bucket_name
+  force_destroy = var.force_destroy
 
-  tags = merge({
+  tags = {
     Name        = var.bucket_name
     Environment = var.environment
-    ManagedBy   = "Terraform"
-  }, var.tags)
+    ManagedBy   = var.managed_by
+  }
 }
 
 resource "aws_s3_bucket_versioning" "this" {
-  count  = var.enable_versioning ? 1 : 0
   bucket = aws_s3_bucket.this.id
 
   versioning_configuration {
-    status = "Enabled"
+    status = var.versioning_enabled ? "Enabled" : "Suspended"
   }
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
-  count  = var.enable_encryption ? 1 : 0
   bucket = aws_s3_bucket.this.id
 
   rule {
@@ -35,9 +34,4 @@ resource "aws_s3_bucket_public_access_block" "this" {
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
-}
-
-resource "aws_s3_bucket_acl" "this" {
-  bucket = aws_s3_bucket.this.id
-  acl    = "private"
 }
