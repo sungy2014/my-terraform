@@ -4,25 +4,19 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
+variable "bucket_name" {
+  description = "Name of the S3 bucket (globally unique)"
+  type        = string
+}
+
 variable "environment" {
-  description = "Environment name for tagging"
+  description = "Environment tag value"
   type        = string
   default     = "production"
 }
 
-variable "bucket_name" {
-  description = "Name of the S3 bucket (must be globally unique)"
-  type        = string
-}
-
-variable "versioning_enabled" {
-  description = "Enable S3 bucket versioning"
-  type        = bool
-  default     = true
-}
-
-variable "force_destroy" {
-  description = "Allow bucket to be destroyed even if it contains objects"
-  type        = bool
-  default     = false
+variable "tags" {
+  description = "Additional tags to apply to resources"
+  type        = map(string)
+  default     = {}
 }

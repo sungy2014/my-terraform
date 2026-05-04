@@ -1,1 +1,0 @@
-bucket_name = "my-s3-bucket-9"
