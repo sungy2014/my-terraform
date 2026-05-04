@@ -1,5 +1,5 @@
 output "bucket_id" {
-  description = "The name of the S3 bucket"
+  description = "The ID of the S3 bucket"
   value       = aws_s3_bucket.this.id
 }
 
@@ -9,16 +9,11 @@ output "bucket_arn" {
 }
 
 output "bucket_domain_name" {
-  description = "The bucket domain name"
+  description = "The domain name of the S3 bucket"
   value       = aws_s3_bucket.this.bucket_domain_name
 }
 
 output "bucket_regional_domain_name" {
-  description = "The bucket regional domain name"
+  description = "The regional domain name of the S3 bucket"
   value       = aws_s3_bucket.this.bucket_regional_domain_name
-}
-
-output "bucket_hosted_zone_id" {
-  description = "The Route 53 hosted zone ID for the bucket"
-  value       = aws_s3_bucket.this.hosted_zone_id
 }
