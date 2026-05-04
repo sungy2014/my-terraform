@@ -4,14 +4,31 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
+variable "bucket_name" {
+  description = "Globally unique name for the S3 bucket"
+  type        = string
+}
+
 variable "environment" {
-  description = "Environment name for tagging"
+  description = "Environment tag value"
   type        = string
   default     = "production"
 }
 
-variable "bucket_name" {
-  description = "Name of the S3 bucket"
-  type        = string
-  default     = "my-s3-bucket-11"
+variable "enable_versioning" {
+  description = "Enable S3 bucket versioning"
+  type        = bool
+  default     = true
+}
+
+variable "enable_encryption" {
+  description = "Enable default server-side encryption (AES-256)"
+  type        = bool
+  default     = true
+}
+
+variable "tags" {
+  description = "Additional tags to apply to resources"
+  type        = map(string)
+  default     = {}
 }

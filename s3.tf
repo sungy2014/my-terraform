@@ -1,14 +1,15 @@
 resource "aws_s3_bucket" "this" {
   bucket = var.bucket_name
 
-  tags = {
+  tags = merge({
     Name        = var.bucket_name
     Environment = var.environment
     ManagedBy   = "Terraform"
-  }
+  }, var.tags)
 }
 
 resource "aws_s3_bucket_versioning" "this" {
+  count  = var.enable_versioning ? 1 : 0
   bucket = aws_s3_bucket.this.id
 
   versioning_configuration {
@@ -17,6 +18,7 @@ resource "aws_s3_bucket_versioning" "this" {
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
+  count  = var.enable_encryption ? 1 : 0
   bucket = aws_s3_bucket.this.id
 
   rule {
