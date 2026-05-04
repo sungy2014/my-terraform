@@ -4,23 +4,23 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
-variable "bucket_name" {
-  description = "Name of the S3 bucket"
-  type        = string
-  default     = "my-terraform-bucket"
-}
-
 variable "environment" {
-  description = "Environment name"
+  description = "Environment name for tagging"
   type        = string
   default     = "production"
 }
 
+variable "bucket_name" {
+  description = "Globally unique S3 bucket name"
+  type        = string
+  default     = "my-terraform-s3-bucket"
+}
+
 variable "tags" {
-  description = "Tags to apply to all resources"
+  description = "Common tags to apply to all resources"
   type        = map(string)
   default = {
-    Name        = "my-terraform-bucket"
+    Name        = "my-terraform-s3-bucket"
     Environment = "production"
     ManagedBy   = "terraform"
   }

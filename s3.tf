@@ -1,9 +1,11 @@
+# S3 bucket resource
 resource "aws_s3_bucket" "this" {
   bucket = var.bucket_name
 
   tags = var.tags
 }
 
+# Enable versioning for data protection and rollback
 resource "aws_s3_bucket_versioning" "this" {
   bucket = aws_s3_bucket.this.id
 
@@ -12,16 +14,7 @@ resource "aws_s3_bucket_versioning" "this" {
   }
 }
 
-resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
-  bucket = aws_s3_bucket.this.id
-
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
-
+# Block all public access for security (default secure)
 resource "aws_s3_bucket_public_access_block" "this" {
   bucket = aws_s3_bucket.this.id
 
@@ -31,10 +24,13 @@ resource "aws_s3_bucket_public_access_block" "this" {
   restrict_public_buckets = true
 }
 
-resource "aws_s3_bucket_ownership_controls" "this" {
+# Enable server-side encryption using AES256
+resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
   bucket = aws_s3_bucket.this.id
 
   rule {
-    object_ownership = "BucketOwnerEnforced"
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
   }
 }
