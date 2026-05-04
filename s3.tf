@@ -5,7 +5,7 @@ resource "aws_s3_bucket" "this" {
   tags = {
     Name        = var.bucket_name
     Environment = var.environment
-    ManagedBy   = var.managed_by
+    ManagedBy   = "terraform"
   }
 }
 
@@ -34,4 +34,9 @@ resource "aws_s3_bucket_public_access_block" "this" {
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_acl" "this" {
+  bucket = aws_s3_bucket.this.id
+  acl    = "private"
 }
